@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tumor Detection</title>
+    <style>
+        /* CSS styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #file {
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        #result {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #result h2 {
+            color: #333;
+        }
+
+        #uploaded-image {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+            height: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tumor Detection</h1>
+    <form id="upload-form" enctype="multipart/form-data">
+        <input type="file" name="file" id="file">
+        <button type="button" onclick="predict()">Predict</button>
+    </form>
+    <div id="result"></div>
+    <img id="uploaded-image" src="#" alt="Uploaded Image">
+    <script>
+        // JavaScript code for prediction and image display
+        function predict() {
+            var form_data = new FormData(document.getElementById("upload-form"));
+            fetch('/predict', {
+                method: 'POST',
+                body: form_data
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("result").innerHTML = "<h2>" + data.result + "</h2>";
+                // Display uploaded image
+                var img = document.getElementById("uploaded-image");
+                var file = document.getElementById("file").files[0];
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    var image = new Image();
+                    image.src = e.target.result;
+                    image.onload = function() {
+                        var canvas = document.createElement('canvas');
+                        var context = canvas.getContext('2d');
+                        canvas.width = 128; // Set desired width
+                        canvas.height = 128; // Set desired height
+                        context.drawImage(image, 0, 0, 128, 128);
+                        img.src = canvas.toDataURL('image/png');
+                    };
+                };
+                reader.readAsDataURL(file);
+            })
+            .catch(error => console.error('Error:', error));
+        }
+    </script>
+</body>
+</html>
